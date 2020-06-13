@@ -1,18 +1,28 @@
+// cli
 const commandLineArgs = require("command-line-args");
 const optionDefinitions = [
   { name: "src", type: String, defaultOption: true, defaultValue: "TEST.md" },
 ];
 const options = commandLineArgs(optionDefinitions);
-const term = require("terminal-kit").terminal;
-const simpleGit = require("simple-git");
 
+// terminal
+const term = require("terminal-kit").terminal;
+
+// git
+const simpleGit = require("simple-git");
 const WORKING_DIR_PATH = "./";
-const READ_FILE = "TEST.md";
 const git = simpleGit(WORKING_DIR_PATH);
+
+// markdown
+const marked = require("marked");
+const TerminalRenderer = require("marked-terminal");
+marked.setOptions({
+  renderer: new TerminalRenderer(),
+});
 
 function printLog(log) {
   return log.all.map((l, i) => {
-    return `${i}: ${l.hash}: ${l.message}`;
+    return `${i}: ${l.message} (${l.hash.substr(0, 6)})`;
   });
 }
 
@@ -22,11 +32,16 @@ function tagName(commit) {
   return commit.refs.substr(5);
 }
 
-async function printCommit(commit, filename) {
+async function printCommit(commit, filename, index) {
   let tag = tagName(commit);
-  console.log(`--- ${filename} ${tag || ""} ${commit.message}`);
-  let show = await git.show(`${commit.hash}:${filename}`);
-  console.log(show);
+  console.log(`--- ${filename} ${tag || ""} ${index} ${commit.message}`);
+
+  try {
+    let show = await git.show(`${commit.hash}:${filename}`);
+    console.log(marked(show));
+  } catch (e) {
+    console.error(e.message);
+  }
 }
 
 async function main(filename) {
@@ -37,7 +52,7 @@ async function main(filename) {
   let index = 0;
   let commit = commits[index];
 
-  printCommit(commit, filename);
+  printCommit(commit, filename, index);
 
   term.grabInput();
 
@@ -46,17 +61,18 @@ async function main(filename) {
       process.exit();
     }
 
-    if (name === "RIGHT") {
+    if (name === "RIGHT" || name === "DOWN") {
       index++;
-      if (index > commits.length - 1) index = commits.length - 1;
+      if (index >= commits.length - 1) index = commits.length - 1;
     }
 
-    if (name === "LEFT") {
+    if (name === "LEFT" || name === "UP") {
       index--;
       if (index <= 0) index = 0;
     }
 
-    printCommit(commit, filename);
+    commit = commits[index];
+    printCommit(commit, filename, index);
   });
 }
 main(options.src);

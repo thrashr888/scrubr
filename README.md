@@ -8,4 +8,4 @@ An app for scrubbing through markdown documents in git.
 
 ## Run
 
-> npm run dev
+> npm run start

@@ -10,14 +10,21 @@ const WORKING_DIR_PATH = "./";
 const READ_FILE = "TEST.md";
 const git = simpleGit(WORKING_DIR_PATH);
 
-// function print(log) {
-//   return log.all.map((l, i) => {
-//     return `${i}: ${l.hash}: ${l.message}`;
-//   });
-// }
+function printLog(log) {
+  return log.all.map((l, i) => {
+    return `${i}: ${l.hash}: ${l.message}`;
+  });
+}
 
-async function print(commit, filename) {
-  console.log(`--- ${filename} ${commit.message}`);
+function tagName(commit) {
+  if (!commit.refs.includes("tag: ")) return;
+
+  return commit.refs.substr(5);
+}
+
+async function printCommit(commit, filename) {
+  let tag = tagName(commit);
+  console.log(`--- ${filename} ${tag || ""} ${commit.message}`);
   let show = await git.show(`${commit.hash}:${filename}`);
   console.log(show);
 }
@@ -25,12 +32,12 @@ async function print(commit, filename) {
 async function main(filename) {
   let log = await git.log({ file: filename });
   let commits = log.all;
-  // console.log(print(l));
+  console.log(printLog(log));
 
   let index = 0;
   let commit = commits[index];
 
-  print(commit, filename);
+  printCommit(commit, filename);
 
   term.grabInput();
 
@@ -49,7 +56,7 @@ async function main(filename) {
       if (index <= 0) index = 0;
     }
 
-    print(commit, filename);
+    printCommit(commit, filename);
   });
 }
 main(options.src);

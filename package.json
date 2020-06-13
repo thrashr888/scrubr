@@ -1,0 +1,27 @@
+{
+  "name": "scrubr",
+  "version": "1.0.0",
+  "description": "git file scrubber",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel index.html",
+    "build": "parcel build index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "git",
+    "text"
+  ],
+  "author": "Paul Thrasher <thrashr888@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "simple-git": "^2.6.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.10.2",
+    "@babel/preset-react": "^7.10.1",
+    "parcel-bundler": "^1.12.4"
+  }
+}

@@ -1,40 +1,55 @@
-import "regenerator-runtime";
-
-import React from "react";
-import ReactDOM from "react-dom";
-
-// import simpleGit from "isomorphic-git";
-import git from "isomorphic-git";
-import http from "isomorphic-git/http/node";
+const commandLineArgs = require("command-line-args");
+const optionDefinitions = [
+  { name: "src", type: String, defaultOption: true, defaultValue: "TEST.md" },
+];
+const options = commandLineArgs(optionDefinitions);
+const term = require("terminal-kit").terminal;
+const simpleGit = require("simple-git");
 
 const WORKING_DIR_PATH = "./";
 const READ_FILE = "TEST.md";
-// const git = simpleGit(WORKING_DIR_PATH);
+const git = simpleGit(WORKING_DIR_PATH);
 
-console.log(`Using isomorphic-git version: ${git.version()}`);
-git
-  .getRemoteInfo({
-    http,
-    url: "https://github.com/isomorphic-git/isomorphic-git.git",
-  })
-  .then((data) => {
-    if (data && data.refs && data.refs.heads) {
-      console.log("List of remote branches");
-      console.log(Object.keys(data.refs.heads));
+// function print(log) {
+//   return log.all.map((l, i) => {
+//     return `${i}: ${l.hash}: ${l.message}`;
+//   });
+// }
+
+async function print(commit, filename) {
+  console.log(`--- ${filename} ${commit.message}`);
+  let show = await git.show(`${commit.hash}:${filename}`);
+  console.log(show);
+}
+
+async function main(filename) {
+  let log = await git.log({ file: filename });
+  let commits = log.all;
+  // console.log(print(l));
+
+  let index = 0;
+  let commit = commits[index];
+
+  print(commit, filename);
+
+  term.grabInput();
+
+  term.on("key", async function (name, matches, data) {
+    if (name === "CTRL_C") {
+      process.exit();
     }
+
+    if (name === "RIGHT") {
+      index++;
+      if (index > commits.length - 1) index = commits.length - 1;
+    }
+
+    if (name === "LEFT") {
+      index--;
+      if (index <= 0) index = 0;
+    }
+
+    print(commit, filename);
   });
-
-async function main() {
-  // let l = await git.log({ file: READ_FILE });
-  // console.log(l);
 }
-main();
-
-class App extends React.Component {
-  render() {
-    return <div>Hello {this.props.name}</div>;
-  }
-}
-
-var mountNode = document.getElementById("app");
-ReactDOM.render(<App />, mountNode);
+main(options.src);

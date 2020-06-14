@@ -1,6 +1,9 @@
 # SCRUBR
 
-An app for scrubbing through markdown documents in git.
+A CLI app for scrubbing through markdown document versions in git.
+
+![index](./index.png)
+![page](./page.png)
 
 ## Install
 
@@ -8,4 +11,4 @@ An app for scrubbing through markdown documents in git.
 
 ## Run
 
-> npm run start
+> node index.js TEST.md
